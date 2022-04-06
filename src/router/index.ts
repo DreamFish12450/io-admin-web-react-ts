@@ -4,7 +4,8 @@ import Login from '@/pages/Login'
 
 import { RouterType } from '@/router/router.type'
 import NoPage from '@/pages/NoPage'
-
+import Home from '@/pages/Home'
+import Demo from '@/pages/Demo'
 export const noPermission: RouterType[] = [
   {
     path: '/login',
@@ -20,6 +21,28 @@ export const noPermission: RouterType[] = [
       {
         key: '404',
         component: NoPage,
+        isShow: false,
+      }
+    ]
+  },
+  {
+    path: '/Home',
+    component: Layout,
+    children: [
+      {
+        key: 'Home',
+        component: Home,
+        isShow: false,
+      }
+    ]
+  },
+  {
+    path: '/Demo',
+    component: Layout,
+    children: [
+      {
+        key: 'Demo',
+        component: Demo,
         isShow: false,
       }
     ]

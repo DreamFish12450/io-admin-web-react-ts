@@ -44,12 +44,12 @@ const renderRoutes = (routes: RouterType[], extraProps = {}, switchProps = {}) =
                 }
               }
 
-              return <Redirect to='/404'/>
+              return <Redirect to='/Demo'/>
             }
           }
         />
       ))}
-      <Redirect to='/404'/>
+      <Redirect to='/Demo'/>
     </Switch>
   ) : null
 }
