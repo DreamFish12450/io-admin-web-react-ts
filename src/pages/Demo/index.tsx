@@ -68,8 +68,8 @@ export const Demo: React.FC<IProps> = props => {
   const onLoad: IAppLoad = async (app: IApplication) => {
     cache.app = app
     initGraphCmds(cache.app)
+    window.app = app;
   }
-
   /** 父组件meta属性更新时,执行initGraphCmds */
   React.useEffect(() => {
     if (cache.app) {
@@ -115,6 +115,7 @@ export const Demo: React.FC<IProps> = props => {
         bodyPosition={{ top: 0, bottom: 0, right: 0 }}
         position={{ width: 290, top: 0, bottom: 0, right: 0 }}
         footerPosition={{ height: 0 }}
+        
       />
       <KeyBindings config={keybindingConfig} />
     </XFlow>

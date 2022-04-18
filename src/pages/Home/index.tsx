@@ -59,6 +59,7 @@ const Home: React.FC<IProps> = () => {
     setGraphData(newGraphData)
 
     const graph = await app.getGraphInstance()
+    // window.graph = graph;
     graph.on('node:click', ({ node }) => {
       const nodeData: NsGraph.INodeConfig = node.getData()
       message.success(`${nodeData.id}节点被点击了`)
