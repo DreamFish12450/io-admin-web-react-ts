@@ -6,7 +6,6 @@
     display: flex;
     width: 180px;
     height: 36px;
-
     text-align: center;
     background-color: #fff;
     border: 1px solid @primaryColor;
@@ -29,10 +28,10 @@
         width: 36px;
     }
 
-    .label {
-        width: 108px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .flex-label {
+        flex-grow: 1;
+        align-items: center;
+        line-height:30px
     }
 
     .status {
@@ -80,9 +79,18 @@
         .icon {
             display: none;
         }
-
-        .label {
+        .flex-label {
+            width: 60px;
+            text-align: center;
+        }
+        .label-74LS181 {
             display: none;
+        }
+        .node-74LS182 {
+            display: none;
+        }
+        .status {
+            display:none
         }
     }
 }

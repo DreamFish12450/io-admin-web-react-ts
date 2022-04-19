@@ -76,7 +76,37 @@ export const nodeDataService: NsNodeCollapsePanel.INodeDataService = async (meta
           renderKey: DND_RENDER_ID,
         },
         {
-            id: '9',
+          id: '9',
+          label: '或门',
+          parentId: '5',
+          renderKey: DND_RENDER_ID,
+        },
+        {
+          id: '10',
+          label: '与非门',
+          parentId: '5',
+          renderKey: DND_RENDER_ID,
+        },
+        {
+          id: '11',
+          label: '或非门',
+          parentId: '5',
+          renderKey: DND_RENDER_ID,
+        },
+        {
+          id: '12',
+          label: '异或',
+          parentId: '5',
+          renderKey: DND_RENDER_ID,
+        },
+        {
+          id: '13',
+          label: '非门',
+          parentId: '5',
+          renderKey: DND_RENDER_ID,
+        },
+        {
+            id: '14',
             label: '输出桩',
             parentId: '5',
             renderKey: DND_RENDER_ID,

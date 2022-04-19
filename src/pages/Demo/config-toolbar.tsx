@@ -1,54 +1,64 @@
-import type { IToolbarItemOptions } from '@antv/xflow'
-import { createToolbarConfig, uuidv4 } from '@antv/xflow'
-import type { IModelService } from '@antv/xflow'
 import {
-  XFlowGraphCommands,
+  createToolbarConfig,
+  IModelService,
+  IToolbarItemOptions,
+  NsGroupCmd,
+  uuidv4,
   XFlowGroupCommands,
-  XFlowDagCommands,
-  NsGraphStatusCommand,
-  MODELS,
+  XFlowNodeCommands,
+  XFlowGraphCommands,
+  NsGraphCmd,
+  NsNodeCmd,
   IconStore,
+  MODELS,
+  IGraphPipelineCommand,
 } from '@antv/xflow'
 import {
+  UploadOutlined,
+  DownloadOutlined,
   UngroupOutlined,
   SaveOutlined,
-  CloudSyncOutlined,
   GroupOutlined,
   GatewayOutlined,
-  PlaySquareOutlined,
-  StopOutlined,
+  UndoOutlined,
+  RedoOutlined,
+  VerticalAlignTopOutlined,
+  VerticalAlignBottomOutlined,
+  CopyOutlined,
+  SnippetsOutlined,
 } from '@ant-design/icons'
 import { MockApi } from './service'
-import { CustomCommands } from './cmd-extensions/constants'
-import type { NsDeployDagCmd } from './cmd-extensions/cmd-deploy'
-import type { NsGraphCmd, NsGroupCmd } from '@antv/xflow'
-import { GROUP_NODE_RENDER_ID } from './constant'
-import { Popconfirm } from 'antd'
-import React from 'react'
 
-export namespace NSToolbarConfig {
-  /** 注册icon 类型 */
-  IconStore.set('SaveOutlined', SaveOutlined)
-  IconStore.set('CloudSyncOutlined', CloudSyncOutlined)
-  IconStore.set('GatewayOutlined', GatewayOutlined)
-  IconStore.set('GroupOutlined', GroupOutlined)
-  IconStore.set('UngroupOutlined', UngroupOutlined)
-  IconStore.set('PlaySquareOutlined', PlaySquareOutlined)
-  IconStore.set('StopOutlined', StopOutlined)
+const GROUP_NODE_RENDER_ID = 'GROUP_NODE_RENDER_ID'
 
+export namespace TOOLBAR_ITEMS {
+  export const LOAD_GRAPH_DATA = XFlowGraphCommands.LOAD_DATA.id
+  export const BACK_NODE = XFlowNodeCommands.BACK_NODE.id
+  export const FRONT_NODE = XFlowNodeCommands.FRONT_NODE.id
+  export const SAVE_GRAPH_DATA = XFlowGraphCommands.SAVE_GRAPH_DATA.id
+  export const REDO_CMD = `${XFlowGraphCommands.REDO_CMD.id}`
+  export const UNDO_CMD = `${XFlowGraphCommands.UNDO_CMD.id}`
+  export const MULTI_SELECT = `${XFlowGraphCommands.GRAPH_TOGGLE_MULTI_SELECT.id}`
+  export const ADD_GROUP = `${XFlowGroupCommands.ADD_GROUP.id}`
+  export const DEL_GROUP = `${XFlowGroupCommands.DEL_GROUP.id}`
+  export const COPY = `${XFlowGraphCommands.GRAPH_COPY.id}`
+  export const PASTE = `${XFlowGraphCommands.GRAPH_PASTE.id}`
+}
+
+namespace NSToolbarConfig {
   /** toolbar依赖的状态 */
   export interface IToolbarState {
     isMultiSelctionActive: boolean
-    isNodeSelected: boolean
     isGroupSelected: boolean
-    isProcessing: boolean
+    isNodeSelected: boolean
+    isUndoAble: boolean
+    isRedoAble: boolean
   }
 
   export const getDependencies = async (modelService: IModelService) => {
     return [
-      await MODELS.SELECTED_CELLS.getModel(modelService),
+      await MODELS.SELECTED_NODES.getModel(modelService),
       await MODELS.GRAPH_ENABLE_MULTI_SELECT.getModel(modelService),
-      await NsGraphStatusCommand.MODEL.getModel(modelService),
     ]
   }
 
@@ -62,67 +72,154 @@ export namespace NSToolbarConfig {
     const isGroupSelected = await MODELS.IS_GROUP_SELECTED.useValue(modelService)
     // isNormalNodesSelected: node不能是GroupNode
     const isNormalNodesSelected = await MODELS.IS_NORMAL_NODES_SELECTED.useValue(modelService)
-    // statusInfo
-    const statusInfo = await NsGraphStatusCommand.MODEL.useValue(modelService)
-
+    // undo redo
+    const isUndoAble = await MODELS.COMMAND_UNDOABLE.useValue(modelService)
+    const isRedoAble = await MODELS.COMMAND_REDOABLE.useValue(modelService)
+    console.log("isUndoAble",isUndoAble)
     return {
+      isUndoAble,
+      isRedoAble,
       isNodeSelected: isNormalNodesSelected,
       isGroupSelected,
       isMultiSelctionActive,
-      isProcessing: statusInfo.graphStatus === NsGraphStatusCommand.StatusEnum.PROCESSING,
     } as NSToolbarConfig.IToolbarState
   }
 
   export const getToolbarItems = async (state: IToolbarState) => {
-    const toolbarGroup1: IToolbarItemOptions[] = []
-    const toolbarGroup2: IToolbarItemOptions[] = []
-    const toolbarGroup3: IToolbarItemOptions[] = []
-    /** 保存数据 */
-    toolbarGroup1.push({
-      id: XFlowGraphCommands.SAVE_GRAPH_DATA.id,
-      iconName: 'SaveOutlined',
-      tooltip: '保存数据',
+    const toolbarGroup0: IToolbarItemOptions[] = []
+    const toolbarGroup: IToolbarItemOptions[] = []
+    // const history = getGraphHistory()
+
+    /** 导入数据 */
+    toolbarGroup0.push({
+      tooltip: '导入',
+      iconName: 'UploadOutlined',
+      id: TOOLBAR_ITEMS.LOAD_GRAPH_DATA,
       onClick: async ({ commandService }) => {
-        commandService.executeCommand<NsGraphCmd.SaveGraphData.IArgs>(
-          XFlowGraphCommands.SAVE_GRAPH_DATA.id,
-          { saveGraphDataService: (meta, graphData) => MockApi.saveGraphData(meta, graphData) },
+        /*
+        commandService.executeCommand<NsGraphCmd.GraphLoadData.IArgs>(
+          TOOLBAR_ITEMS.LOAD_GRAPH_DATA,
+          { loadDataService: () => MockApi.loadGraphData() },
         )
+        */
+
+        commandService.executeCommandPipeline([
+        /** 1. 从服务端获取数据 */
+        {
+          commandId: XFlowGraphCommands.LOAD_DATA.id,
+          getCommandOption: async () => {
+            return {
+              args: {
+                loadDataService: MockApi.loadGraphData,
+              },
+            }
+          },
+        } as IGraphPipelineCommand<NsGraphCmd.GraphLoadData.IArgs>,
+        /** 2. 执行布局算法 */
+        // 无法执行
+        /** 3. 画布内容渲染 */
+        {
+          commandId: XFlowGraphCommands.GRAPH_RENDER.id,
+          getCommandOption: async ctx => {
+            const { graphData } = ctx.getResult()
+            return {
+              args: {
+                graphData,
+              },
+            }
+          },
+        } as IGraphPipelineCommand<NsGraphCmd.GraphRender.IArgs>,
+        /** 4. 缩放画布 */
+        {
+          commandId: XFlowGraphCommands.GRAPH_ZOOM.id,
+          getCommandOption: async () => {
+            return {
+              args: { factor: 'fit', zoomOptions: { maxScale: 0.9 } },
+            }
+          },
+        } as IGraphPipelineCommand<NsGraphCmd.GraphZoom.IArgs>,
+      ])
       },
     })
-    /** 部署服务按钮 */
-    toolbarGroup1.push({
-      iconName: 'CloudSyncOutlined',
-      tooltip: '部署服务',
-      id: CustomCommands.DEPLOY_SERVICE.id,
-      onClick: ({ commandService }) => {
-        commandService.executeCommand<NsDeployDagCmd.IArgs>(CustomCommands.DEPLOY_SERVICE.id, {
-          deployDagService: (meta, graphData) => MockApi.deployDagService(meta, graphData),
+
+    /** 撤销 */
+    toolbarGroup.push({
+      tooltip: '撤销',
+      iconName: 'UndoOutlined',
+      id: TOOLBAR_ITEMS.UNDO_CMD,
+     
+      onClick: async ({ commandService, modelService }) => {
+        if(commandService.isUndoable)
+          commandService.undoCommand();
+       
+      },
+    })
+
+    /** 重做 */
+    toolbarGroup.push({
+      tooltip: '重做',
+      iconName: 'RedoOutlined',
+      id: TOOLBAR_ITEMS.REDO_CMD,
+      onClick: async ({ commandService, modelService }) => {
+        if(commandService.isRedoable)
+          commandService.redoCommand();
+        
+        
+      },
+    })
+
+    /** FRONT_NODE */
+    toolbarGroup.push({
+      tooltip: '置前',
+      iconName: 'VerticalAlignTopOutlined',
+      id: TOOLBAR_ITEMS.FRONT_NODE,
+      isEnabled: state.isNodeSelected,
+      onClick: async ({ commandService, modelService }) => {
+        const node = await MODELS.SELECTED_NODE.useValue(modelService)
+        commandService.executeCommand<NsNodeCmd.FrontNode.IArgs>(TOOLBAR_ITEMS.FRONT_NODE, {
+          nodeId: node?.id,
         })
       },
     })
+
+    /** BACK_NODE */
+    toolbarGroup.push({
+      tooltip: '置后',
+      iconName: 'VerticalAlignBottomOutlined',
+      id: TOOLBAR_ITEMS.BACK_NODE,
+      isEnabled: state.isNodeSelected,
+      onClick: async ({ commandService, modelService }) => {
+        const node = await MODELS.SELECTED_NODE.useValue(modelService)
+        commandService.executeCommand<NsNodeCmd.FrontNode.IArgs>(TOOLBAR_ITEMS.BACK_NODE, {
+          nodeId: node?.id,
+        })
+      },
+    })
+
     /** 开启框选 */
-    toolbarGroup2.push({
-      id: XFlowGraphCommands.GRAPH_TOGGLE_MULTI_SELECT.id,
+    toolbarGroup.push({
       tooltip: '开启框选',
       iconName: 'GatewayOutlined',
+      id: TOOLBAR_ITEMS.MULTI_SELECT,
       active: state.isMultiSelctionActive,
       onClick: async ({ commandService }) => {
         commandService.executeCommand<NsGraphCmd.GraphToggleMultiSelect.IArgs>(
-          XFlowGraphCommands.GRAPH_TOGGLE_MULTI_SELECT.id,
+          TOOLBAR_ITEMS.MULTI_SELECT,
           {},
         )
       },
     })
+
     /** 新建群组 */
-    toolbarGroup2.push({
-      id: XFlowGroupCommands.ADD_GROUP.id,
+    toolbarGroup.push({
       tooltip: '新建群组',
       iconName: 'GroupOutlined',
+      id: TOOLBAR_ITEMS.ADD_GROUP,
       isEnabled: state.isNodeSelected,
       onClick: async ({ commandService, modelService }) => {
         const cells = await MODELS.SELECTED_CELLS.useValue(modelService)
         const groupChildren = cells.map(cell => cell.id)
-        commandService.executeCommand<NsGroupCmd.AddGroup.IArgs>(XFlowGroupCommands.ADD_GROUP.id, {
+        commandService.executeCommand<NsGroupCmd.AddGroup.IArgs>(TOOLBAR_ITEMS.ADD_GROUP, {
           nodeConfig: {
             id: uuidv4(),
             renderKey: GROUP_NODE_RENDER_ID,
@@ -133,11 +230,12 @@ export namespace NSToolbarConfig {
         })
       },
     })
+
     /** 解散群组 */
-    toolbarGroup2.push({
-      id: XFlowGroupCommands.DEL_GROUP.id,
+    toolbarGroup.push({
       tooltip: '解散群组',
       iconName: 'UngroupOutlined',
+      id: TOOLBAR_ITEMS.DEL_GROUP,
       isEnabled: state.isGroupSelected,
       onClick: async ({ commandService, modelService }) => {
         const cell = await MODELS.SELECTED_NODE.useValue(modelService)
@@ -148,65 +246,55 @@ export namespace NSToolbarConfig {
       },
     })
 
-    toolbarGroup3.push({
-      id: XFlowDagCommands.QUERY_GRAPH_STATUS.id + 'play',
-      tooltip: '开始执行',
-      iconName: 'PlaySquareOutlined',
-      isEnabled: !state.isProcessing,
+    /** 保存数据 */
+    toolbarGroup.push({
+      tooltip: '保存',
+      iconName: 'DownloadOutlined',//'SaveOutlined',
+      id: TOOLBAR_ITEMS.SAVE_GRAPH_DATA,
       onClick: async ({ commandService }) => {
-        commandService.executeCommand<NsGraphStatusCommand.IArgs>(
-          XFlowDagCommands.QUERY_GRAPH_STATUS.id,
-          {
-            graphStatusService: MockApi.graphStatusService,
-            loopInterval: 3000,
-          },
+        commandService.executeCommand<NsGraphCmd.SaveGraphData.IArgs>(
+          TOOLBAR_ITEMS.SAVE_GRAPH_DATA,
+          { saveGraphDataService: (meta, graphData) => MockApi.saveGraphData(meta, graphData) },
         )
       },
     })
-    toolbarGroup3.push({
-      id: XFlowDagCommands.QUERY_GRAPH_STATUS.id + 'stop',
-      tooltip: '停止执行',
-      iconName: 'StopOutlined',
-      isEnabled: state.isProcessing,
-      onClick: async ({ commandService }) => {
-        commandService.executeCommand<NsGraphStatusCommand.IArgs>(
-          XFlowDagCommands.QUERY_GRAPH_STATUS.id,
-          {
-            graphStatusService: MockApi.stopGraphStatusService,
-            loopInterval: 5000,
-          },
-        )
-      },
-      render: props => {
-        return (
-          <Popconfirm
-            title="确定停止执行？"
-            onConfirm={() => {
-              props.onClick()
-            }}
-          >
-            {props.children}
-          </Popconfirm>
-        )
-      },
-    })
-
     return [
-      { name: 'graphData', items: toolbarGroup1 },
-      { name: 'groupOperations', items: toolbarGroup2 },
       {
-        name: 'customCmd',
-        items: toolbarGroup3,
+        name: 'graphData',
+        items: toolbarGroup0,
+      },
+      {
+        name: 'graphData',
+        items: toolbarGroup,
       },
     ]
   }
 }
-export const useToolbarConfig = createToolbarConfig(toolbarConfig => {
+
+/** 注册icon 类型 */
+const registerIcon = () => {
+  IconStore.set('UploadOutlined', UploadOutlined)
+  IconStore.set('DownloadOutlined', DownloadOutlined)
+  IconStore.set('SaveOutlined', SaveOutlined)
+  IconStore.set('UndoOutlined', UndoOutlined)
+  IconStore.set('RedoOutlined', RedoOutlined)
+  IconStore.set('VerticalAlignTopOutlined', VerticalAlignTopOutlined)
+  IconStore.set('VerticalAlignBottomOutlined', VerticalAlignBottomOutlined)
+  IconStore.set('GatewayOutlined', GatewayOutlined)
+  IconStore.set('GroupOutlined', GroupOutlined)
+  IconStore.set('UngroupOutlined', UngroupOutlined)
+  IconStore.set('CopyOutlined', CopyOutlined)
+  IconStore.set('SnippetsOutlined', SnippetsOutlined)
+}
+
+export const useToolbarConfig = createToolbarConfig((toolbarConfig, proxy) => {
+  registerIcon()
   /** 生产 toolbar item */
   toolbarConfig.setToolbarModelService(async (toolbarModel, modelService, toDispose) => {
     const updateToolbarModel = async () => {
       const state = await NSToolbarConfig.getToolbarState(modelService)
       const toolbarItems = await NSToolbarConfig.getToolbarItems(state)
+
       toolbarModel.setValue(toolbar => {
         toolbar.mainGroups = toolbarItems
       })

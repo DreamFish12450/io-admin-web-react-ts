@@ -4,6 +4,7 @@ import {
   NsJsonSchemaForm,
   NsNodeCmd,
   useXFlowApp,
+  uuidv4,
   XFlowGraphCommands,
   XFlowNodeCommands,
 } from '@antv/xflow'
@@ -12,7 +13,7 @@ import { MODELS } from '@antv/xflow'
 import { Button, notification } from 'antd'
 import { SmileOutlined } from '@ant-design/icons'
 import type { Node as X6Node } from '@antv/x6'
-import {evalRPN} from '../../utils/evalRPN'
+import { evalRPN } from '../../utils/evalRPN'
 // import { useGraphConfig } from './config-graph'
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(() => resolve(true), ms))
@@ -40,15 +41,24 @@ const checkNum = (_: any, value: number) => {
   }
   return Promise.reject(new Error('数字必须为0或1'))
 }
+function createInputPort(portMeta) {
+  return {
+    id: uuidv4(),
+    type: NsGraph.AnchorType.INPUT,
+    group: NsGraph.AnchorGroup.BOTTOM,
+    tooltip: '输入桩',
+    ...portMeta,
+  }
+}
 let rule = [{ message: '必须填入数字' }, { validator: checkNum }]
-
+let calVal = '1234'
 export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (args) => {
   const { targetData, modelService, targetType } = args
   /** 可以使用获取 graphMeta */
   const graphMeta = await MODELS.GRAPH_META.useValue(modelService)
   // console.log('formSchemaService', graphMeta, args)
 
-  if (targetData.label === '74LS182') {
+  if (targetData && targetData.label === '74LS182') {
     i = 0
     return {
       tabs: [
@@ -209,7 +219,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
         },
       ],
     }
-  } else if (targetData.label !== '0桩' && targetData.label !== '1桩') {
+  } else if (targetData && targetData.label !== '0桩' && targetData.label !== '1桩') {
     return {
       tabs: [
         {
@@ -220,11 +230,24 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
               name: 'Group1',
               controls: [
                 {
-                  name: 'isDisabled',
+                  name: 'calculate',
                   tooltip: '计算输出值',
                   label: '计算输出值',
                   shape: ControlShape.CHECKBOX,
                   defaultValue: false,
+                },
+                {
+                  name: 'portNum',
+                  tooltip: '设置输入端口数量',
+                  label: '设置输入端口数量',
+                  shape: ControlShape.SELECT,
+                  value: 2,
+                  options: [
+                    { title: '3', value: '3' },
+                    { title: '4', value: '4' },
+                    { title: '5', value: '5' },
+                  ],
+                  defaultValue: 2,
                 },
               ],
             },
@@ -239,13 +262,13 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
 }
 export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = async (args) => {
   // console.log('formValueUpdateService', args);
-  const { values, commandService, targetData, modelService } = args
+  const { values, allFields, commandService, targetData, modelService } = args
   const updateNode = (node: NsGraph.INodeConfig) => {
     return commandService.executeCommand<NsNodeCmd.UpdateNode.IArgs>(XFlowNodeCommands.UPDATE_NODE.id, {
       nodeConfig: node,
     })
   }
-  if (targetData.label === '74LS182') {
+  if (targetData.label && targetData.label === '74LS182') {
     let temp = values[0].name[0]
     console.log('formValueUpdateService  values:', values[0].value)
     // if (values[0].value > 1) {
@@ -302,41 +325,67 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
       }
     }
   } else {
-    let res = targetData?.ports.filter((v: any) => {
-      return v?.connected == true && v?.type == 'input'
-    })
-    console.log('res', targetData.inputArr[0].id)
-    let arr = targetData.inputArr
-    const stack = []
-    let result = []
-    stack.push(targetData)
-    // 通过async/await去操作得到的Promise对象
-    let usePromise = async () => {
-      while (stack.length) {
-        let node = stack.pop()
-        result.push(node.label)
-        console.log('node', node.label)
-        if (node.inputArr.length > 1) {
-          let arr = node.inputArr
-          let temp
-          arr.forEach((e: { val: any }) => {
-            temp = window.app.getNodeById(e.val).then((data: any) => {
-              stack.push(data.store.data.data)
-              return data.store.data.data
-              // stack.push(data.store.data.data)
+    if (values[0].name[0] === 'calculate') {
+      let res = targetData?.ports.filter((v: any) => {
+        return v?.connected == true && v?.type == 'input'
+      })
+      let arr = targetData.inputArr
+      const stack = []
+      let result = []
+      let flag = 0
+      stack.push(targetData)
+      // 通过async/await去操作得到的Promise对象
+      let usePromise = async () => {
+        while (stack.length) {
+          let node = stack.pop()
+          if (node.label == '非门') {
+            flag = 1
+          } else {
+            result.push(node.label)
+          }
+          if (node.inputArr.length > 0) {
+            let arr = node.inputArr
+            let temp
+            arr.forEach((e: { val: any }) => {
+              temp = window.app.getNodeById(e.val).then((data: any) => {
+                stack.push(data.store.data.data)
+                return data.store.data.data
+                // stack.push(data.store.data.data)
+              })
             })
-
-            //   stack.push(temp)
-          })
-          await temp
-          console.log('stack', stack)
+            await temp
+            console.log('stack', stack)
+          }
         }
+        calVal = flag ? !evalRPN(result.reverse()) : evalRPN(result.reverse())
+        if (note)
+          notification.open({
+            message: '成功',
+            description: `输出值为${calVal}`,
+          })
+        note = !note
+        // console.log('result', flag?!evalRPN(result.reverse()):evalRPN(result.reverse()))
       }
-      console.log("result",evalRPN(result.reverse()))
+      usePromise()
+    } else if (values[0].name[0] === 'portNum') {
+      let usePromise = async () => {
+        console.log(values[0].value)
+        const node = window.app.getNodeById(targetData.id).then((data: any) => {
+          for (let i = 2; i < values[0].value; i++) {
+            commandService.executeCommand<NsNodeCmd.UpdateNodePort.IArgs>(XFlowNodeCommands.UPDATE_NODE_PORT.id, {
+              node: data,
+              updatePorts: async (ports) => {
+                return [...ports, createInputPort({})]
+              },
+            })
+          }
+        })
+        await node
+      }
+      usePromise()
+
     }
-    usePromise()
     // console.log('result', result)
-    
   }
 }
 

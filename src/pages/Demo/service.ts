@@ -137,7 +137,39 @@ export namespace MockApi {
             ],
           )
         })
-    } else if (nodeLabel !== '74LS182') {
+    } else if(nodeLabel === '非门'){
+      Array(1)
+      .fill(1)
+      .forEach((item, idx) => {
+        const portIdx = idx + 1 + leftN
+        ports.push(
+          ...[
+            {
+              id: `${nodeId}-output-${portIdx}`,
+              type: NsGraph.AnchorType.OUTPUT,
+              group: NsGraph.AnchorGroup.TOP,
+              tooltip: `输出桩`,
+            },
+          ],
+        )
+      })
+    Array(1)
+      .fill(1)
+      .forEach((item, idx) => {
+        const portIdx = idx + 1 + leftN
+        ports.push(
+          ...[
+            {
+              id: `${nodeId}-input-${portIdx}`,
+              type: NsGraph.AnchorType.INPUT,
+              group: NsGraph.AnchorGroup.BOTTOM,
+              tooltip: `输入桩`,
+            },
+          ],
+        )
+      })
+    }
+    else if (nodeLabel !== '74LS182') {
       Array(1)
         .fill(1)
         .forEach((item, idx) => {

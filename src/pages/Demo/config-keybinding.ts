@@ -12,7 +12,7 @@ export const useKeybindingConfig = createKeybindingConfig(config => {
     return regsitry.registerKeybinding([
       {
         id: 'delete node or edge',
-        keybinding: 'backspace',
+        keybinding: 'del',
         callback: async function (item, modelService, cmd, e) {
           const cells = await MODELS.SELECTED_CELLS.useValue(modelService)
           // 先删除edges

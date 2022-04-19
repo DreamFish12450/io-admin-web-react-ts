@@ -100,6 +100,7 @@ export const useGraphHookConfig = createHookConfig<IProps>((config, proxy) => {
               eventName: 'edge:added',
               callback: (e, cmds) => {
                 const node = e.edge.getTargetNode() as any as X6Node
+                console.log("node:moved",node)
                 const isCommand = ObjectExt.getByPath(e, 'options.isCommand', '.')
                 console.log(isCommand)
                 if (!isCommand) {
