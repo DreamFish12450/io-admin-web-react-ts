@@ -1,0 +1,19 @@
+@import '@/assets/styles/mixin.scss';
+
+.du-header {
+  background-color: #ffffff;
+  padding: 0;
+  @include clearfix;
+  .header-avatar-wrapper {
+    float: right;
+    margin-right: 20px;
+    & > img {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      transform: rotate(120deg);
+    }
+  }
+}

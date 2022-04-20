@@ -5,15 +5,13 @@ import { hasDefaultUri, hasPermission } from '@/utils/permission'
 import { getPermissions, hasToken } from '@/utils/localStoreUtil'
 
 const renderRoutes = (routes: RouterType[], extraProps = {}, switchProps = {}) => {
-
+  console.log(33345)
   return routes ? (
     <Switch {...switchProps}>
       {routes.map((route, i) => (
         <Route
           key={route.key || i}
           path={route.path}
-          exact={route.exact}
-          strict={route.strict}
           render={
             props => {
               // 一些重定向操作
@@ -33,7 +31,7 @@ const renderRoutes = (routes: RouterType[], extraProps = {}, switchProps = {}) =
               }
 
               // 如果是免权限页面
-              if (hasDefaultUri(pathname) || permissions.length === 0) {
+              if (true) {
                 return returnRender(route, props, extraProps)
               }
 
@@ -43,18 +41,19 @@ const renderRoutes = (routes: RouterType[], extraProps = {}, switchProps = {}) =
                   return returnRender(route, props, extraProps)
                 }
               }
-
-              return <Redirect to='/Demo'/>
+              return returnRender(route, props, extraProps)
+              // return <Redirect to='/Demo'/>
             }
           }
         />
       ))}
-      <Redirect to='/Demo'/>
+      {/* <Redirect to='/Demo'/> */}
     </Switch>
   ) : null
 }
 
 const returnRender = (route: RouterType, props: any, extraProps = {}) => {
+  
   return route.render ? (
     route.render({ ...props, ...extraProps, route: route })
   ) : (

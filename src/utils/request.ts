@@ -8,53 +8,55 @@ const isDevelopment = import.meta.env.DEV
 
 const request = axios.create({
   // 若需要vite代理，这里就不要设置
-  baseURL: 'http://127.0.0.1:8081',
+  // baseURL: '',
   timeout: 10 * 1000,
 })
 
-// 添加一个请求的拦截
-request.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
-    config.headers.contentType = 'application/json;charset=UTF-8'
+// // 添加一个请求的拦截
+// request.interceptors.request.use(
+//   (config: AxiosRequestConfig) => {
+//     config.headers.contentType = 'application/json;charset=UTF-8'
 
-    // 配置代理后，在这里统一设置前缀，不必在api中每个都添加
-    // config.url = '/api' + config.url
+//     // 配置代理后，在这里统一设置前缀，不必在api中每个都添加
+//     // config.url = '/api' + config.url
 
-    config.headers['Authorization'] = getToken()
-    return config
-  },
-  (error: AxiosError) => {
-    message.error(error.message)
-    return Promise.reject(error)
-  },
-)
+//     config.headers['Authorization'] = getToken()
+//     return config
+//   },
+//   (error: AxiosError) => {
+//     message.error(error.message)
+//     return Promise.reject(error)
+//   },
+// )
 
-// 响应拦截
-request.interceptors.response.use(
-  (resp: AxiosResponse<IResponse<any>>) => {
-    const {
-      data: { code, msg, data },
-    } = resp
+// // 响应拦截
+// request.interceptors.response.use(
 
-    if (window.location.pathname !== '/login' && code === 401) {
-      removeToken()
-      window.href = '/login'
-      return
-    }
+//   (resp: AxiosResponse<IResponse<any>>) => {
+//     const {
+//       data: { code, msg, data },
+//     } = resp
 
-    if (code !== 200) {
-      message.error(msg)
-    }
+//     if (window.location.pathname !== '/login' && code === 401) {
+//       removeToken()
+//       window.href = '/login'
+//       return
+//     }
 
-    return data as any
-  },
-  (error: AxiosError) => {
-    message.error(error.message)
-    return Promise.reject(error)
-  },
-)
+//     if (code !== 200) {
+//       message.error(msg)
+//     }
+
+//     return data as any
+//   },
+//   (error: AxiosError) => {
+//     message.error(error.message)
+//     return Promise.reject(error)
+//   },
+// )
 
 const get = (url: string, params?: object, headers?: object): Promise<any> => {
+  console.log("dev",isDevelopment);
   return http({ url, params, headers, method: 'GET' })
 }
 
