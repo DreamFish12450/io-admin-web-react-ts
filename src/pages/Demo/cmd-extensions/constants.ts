@@ -21,4 +21,9 @@ export namespace CustomCommands {
     label: '部署服务',
     category,
   }
+  export const SHOW_IMPORT_MODAL: IGraphCommand = {
+    id: 'xflow:import-modal',
+    label: '打开导入弹窗',
+    category,
+  }
 }

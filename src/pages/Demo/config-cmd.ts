@@ -88,7 +88,7 @@ export const initGraphCmds = (app: IApplication) => {
             layoutOptions: {
               type: 'dagre',
               /** 布局方向 */
-              rankdir: 'LR',
+              rankdir: 'TB',
               /** 节点间距 */
               nodesep: 30,
               /** 层间距 */

@@ -12,6 +12,9 @@ import {
   IconStore,
   MODELS,
   IGraphPipelineCommand,
+  XFlowEdgeCommands,
+  NsGraph,
+  NsEdgeCmd,
 } from '@antv/xflow'
 import {
   UploadOutlined,
@@ -28,6 +31,12 @@ import {
   SnippetsOutlined,
 } from '@ant-design/icons'
 import { MockApi } from './service'
+import { IRequest } from '@/utils/request.type'
+import { post } from '@/utils/request'
+import { DND_RENDER_ID } from './constant'
+import { judge } from '@/utils/evalRPN'
+import { NsImportModuleCmd } from './cmd-extensions/cmd-import-modal'
+import { CustomCommands } from './cmd-extensions/constants'
 
 const GROUP_NODE_RENDER_ID = 'GROUP_NODE_RENDER_ID'
 
@@ -65,9 +74,7 @@ namespace NSToolbarConfig {
   /** toolbar依赖的状态 */
   export const getToolbarState = async (modelService: IModelService) => {
     // isMultiSelctionActive
-    const { isEnable: isMultiSelctionActive } = await MODELS.GRAPH_ENABLE_MULTI_SELECT.useValue(
-      modelService,
-    )
+    const { isEnable: isMultiSelctionActive } = await MODELS.GRAPH_ENABLE_MULTI_SELECT.useValue(modelService)
     // isGroupSelected
     const isGroupSelected = await MODELS.IS_GROUP_SELECTED.useValue(modelService)
     // isNormalNodesSelected: node不能是GroupNode
@@ -75,7 +82,7 @@ namespace NSToolbarConfig {
     // undo redo
     const isUndoAble = await MODELS.COMMAND_UNDOABLE.useValue(modelService)
     const isRedoAble = await MODELS.COMMAND_REDOABLE.useValue(modelService)
-    console.log("isUndoAble",isUndoAble)
+    // console.log('isUndoAble', isUndoAble)
     return {
       isUndoAble,
       isRedoAble,
@@ -93,52 +100,23 @@ namespace NSToolbarConfig {
     /** 导入数据 */
     toolbarGroup0.push({
       tooltip: '导入',
-      iconName: 'UploadOutlined',
+      iconName: 'DownloadOutlined',
       id: TOOLBAR_ITEMS.LOAD_GRAPH_DATA,
       onClick: async ({ commandService }) => {
-        /*
-        commandService.executeCommand<NsGraphCmd.GraphLoadData.IArgs>(
-          TOOLBAR_ITEMS.LOAD_GRAPH_DATA,
-          { loadDataService: () => MockApi.loadGraphData() },
-        )
-        */
+        
 
-        commandService.executeCommandPipeline([
-        /** 1. 从服务端获取数据 */
-        {
-          commandId: XFlowGraphCommands.LOAD_DATA.id,
-          getCommandOption: async () => {
-            return {
-              args: {
-                loadDataService: MockApi.loadGraphData,
-              },
-            }
-          },
-        } as IGraphPipelineCommand<NsGraphCmd.GraphLoadData.IArgs>,
-        /** 2. 执行布局算法 */
-        // 无法执行
-        /** 3. 画布内容渲染 */
-        {
-          commandId: XFlowGraphCommands.GRAPH_RENDER.id,
-          getCommandOption: async ctx => {
-            const { graphData } = ctx.getResult()
-            return {
-              args: {
-                graphData,
-              },
-            }
-          },
-        } as IGraphPipelineCommand<NsGraphCmd.GraphRender.IArgs>,
-        /** 4. 缩放画布 */
-        {
-          commandId: XFlowGraphCommands.GRAPH_ZOOM.id,
-          getCommandOption: async () => {
-            return {
-              args: { factor: 'fit', zoomOptions: { maxScale: 0.9 } },
-            }
-          },
-        } as IGraphPipelineCommand<NsGraphCmd.GraphZoom.IArgs>,
-      ])
+        let obj: IRequest<any> = {
+          url: '/api/module/select',
+          params: { id: '1' },
+        }
+
+        await post(obj).then((res) => {
+          commandService.executeCommand<NsImportModuleCmd.IArgs>(CustomCommands.SHOW_IMPORT_MODAL.id, {
+            res:res.data.data,
+            updateNodeNameService: MockApi.renameNode,
+          })
+          
+        })
       },
     })
 
@@ -147,11 +125,9 @@ namespace NSToolbarConfig {
       tooltip: '撤销',
       iconName: 'UndoOutlined',
       id: TOOLBAR_ITEMS.UNDO_CMD,
-     
+
       onClick: async ({ commandService, modelService }) => {
-        if(commandService.isUndoable)
-          commandService.undoCommand();
-       
+        if (commandService.isUndoable) commandService.undoCommand()
       },
     })
 
@@ -161,10 +137,7 @@ namespace NSToolbarConfig {
       iconName: 'RedoOutlined',
       id: TOOLBAR_ITEMS.REDO_CMD,
       onClick: async ({ commandService, modelService }) => {
-        if(commandService.isRedoable)
-          commandService.redoCommand();
-        
-        
+        if (commandService.isRedoable) commandService.redoCommand()
       },
     })
 
@@ -203,10 +176,7 @@ namespace NSToolbarConfig {
       id: TOOLBAR_ITEMS.MULTI_SELECT,
       active: state.isMultiSelctionActive,
       onClick: async ({ commandService }) => {
-        commandService.executeCommand<NsGraphCmd.GraphToggleMultiSelect.IArgs>(
-          TOOLBAR_ITEMS.MULTI_SELECT,
-          {},
-        )
+        commandService.executeCommand<NsGraphCmd.GraphToggleMultiSelect.IArgs>(TOOLBAR_ITEMS.MULTI_SELECT, {})
       },
     })
 
@@ -218,7 +188,7 @@ namespace NSToolbarConfig {
       isEnabled: state.isNodeSelected,
       onClick: async ({ commandService, modelService }) => {
         const cells = await MODELS.SELECTED_CELLS.useValue(modelService)
-        const groupChildren = cells.map(cell => cell.id)
+        const groupChildren = cells.map((cell) => cell.id)
         commandService.executeCommand<NsGroupCmd.AddGroup.IArgs>(TOOLBAR_ITEMS.ADD_GROUP, {
           nodeConfig: {
             id: uuidv4(),
@@ -247,17 +217,16 @@ namespace NSToolbarConfig {
     })
 
     /** 保存数据 */
-    toolbarGroup.push({
-      tooltip: '保存',
-      iconName: 'DownloadOutlined',//'SaveOutlined',
-      id: TOOLBAR_ITEMS.SAVE_GRAPH_DATA,
-      onClick: async ({ commandService }) => {
-        commandService.executeCommand<NsGraphCmd.SaveGraphData.IArgs>(
-          TOOLBAR_ITEMS.SAVE_GRAPH_DATA,
-          { saveGraphDataService: (meta, graphData) => MockApi.saveGraphData(meta, graphData) },
-        )
-      },
-    })
+    // toolbarGroup.push({
+    //   tooltip: '保存',
+    //   iconName: 'DownloadOutlined', //'SaveOutlined',
+    //   id: TOOLBAR_ITEMS.SAVE_GRAPH_DATA,
+    //   onClick: async ({ commandService }) => {
+    //     commandService.executeCommand<NsGraphCmd.SaveGraphData.IArgs>(TOOLBAR_ITEMS.SAVE_GRAPH_DATA, {
+    //       saveGraphDataService: (meta, graphData) => MockApi.saveGraphData(meta, graphData),
+    //     })
+    //   },
+    // })
     return [
       {
         name: 'graphData',
@@ -295,12 +264,12 @@ export const useToolbarConfig = createToolbarConfig((toolbarConfig, proxy) => {
       const state = await NSToolbarConfig.getToolbarState(modelService)
       const toolbarItems = await NSToolbarConfig.getToolbarItems(state)
 
-      toolbarModel.setValue(toolbar => {
+      toolbarModel.setValue((toolbar) => {
         toolbar.mainGroups = toolbarItems
       })
     }
     const models = await NSToolbarConfig.getDependencies(modelService)
-    const subscriptions = models.map(model => {
+    const subscriptions = models.map((model) => {
       return model.watch(async () => {
         updateToolbarModel()
       })

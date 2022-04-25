@@ -6,7 +6,11 @@ import { IconStore, XFlowNodeCommands, XFlowEdgeCommands } from '@antv/xflow'
 import { DeleteOutlined, EditOutlined, StopOutlined } from '@ant-design/icons'
 import { CustomCommands } from './cmd-extensions/constants'
 import { MockApi } from './service'
-
+import { groupEnd } from 'console'
+import { inOrder, judge } from '../../utils/evalRPN'
+import { IRequest } from '@/utils/request.type'
+import { post } from '@/utils/request'
+import { notification } from 'antd'
 /** menuitem 配置 */
 export namespace NsMenuItemConfig {
   /** 注册菜单依赖的icon */
@@ -61,9 +65,102 @@ export namespace NsMenuItemConfig {
     id: 'separator',
     type: MenuItemType.Separator,
   }
+
+  export const UPLOAD_NODE: IMenuOptions = {
+    id: 'UPLOAD',
+    label: '上传节点',
+    iconName: 'DeleteOutlined',
+    onClick: async ({ target, commandService }) => {
+      console.log('target?.data?.groupChildren', target?.data)
+      // console.log('UPLOADTARGET', target)
+      const map: any[] = []
+      let resMap: any[] = []
+      let finalData: string
+      let inputNum = 1
+      let outputNum = 1
+      let inputPort = []
+      let outputPort = []
+      let asyncFunc = []
+      const getChild = (e: string) => {
+        return new Promise((resolve1) => {
+          let a = window.app
+            .getNodeById(e)
+            .then(async (data: any) => {
+              return new Promise(function (resolve, reject) {
+                if (data.store.data.data.label === '输出桩') {
+                  outputPort.push(`output${outputNum++}`)
+                  resolve(data.store.data.data.inputArr[0].val)
+                } else if (data.store.data.data.label === '0桩' || data.store.data.data.label === '1桩') {
+                  inputPort.push({
+                    id: data.store.data.data.id,
+                    no: `input${inputNum++}`,
+                  })
+                }
+              })
+            })
+            .then((res: any) => {
+              window.app.getNodeById(res).then((val: any) => {
+                console.log('inputPort', inputPort)
+                inOrder(val.store.data.data).then((v) => {
+                  v.forEach((e, k) => {
+                    if (!judge(e)) {
+                      inputPort.forEach((i) => {
+                        if (i.id === e) {
+                          return (v[k] = i.no)
+                        } else {
+                          return v[k]
+                        }
+                      })
+                    }
+                  })
+                  resMap.push(v)
+                  resolve1(finalData)
+                })
+              })
+            })
+        })
+      }
+      let temp1 = 1
+      let resultArr = ''
+      const asyncFun = await Promise.all(
+        target?.data?.groupChildren.map(async (e: string, index: number) => {
+          await getChild(e)
+            .then((val: any) => {
+              const output = outputPort.pop()
+              if (temp1 < outputNum) {
+                if (temp1 === outputNum - 1) {
+                  resultArr += output + '-' + resMap[temp1 - 1].toString()
+                  let obj: IRequest<any> = {
+                    url: '/api/module/insert',
+                    params: { inputNum: inputNum, outputNum: outputNum, stuId: '1', label: target?.data?.label || '' ,formula:resultArr},
+                  }
+                  post(obj).then((res) => {
+                    if(res.data.message === '更新成功'){
+                      notification.open({
+                        message: 'Success',
+                        description: '上传成功',
+                      })
+                    }
+                  })
+                  console.log('resultArr', resultArr)
+                } else {
+                  resultArr += output + '-' + resMap[temp1 - 1].toString() + '+'
+                }
+                temp1 += 1
+              }
+            })
+            .catch((err) => {
+              console.log(err)
+            })
+            .finally(() => {})
+          return 111
+        }),
+      )
+    },
+  }
 }
 
-export const useMenuConfig = createCtxMenuConfig(config => {
+export const useMenuConfig = createCtxMenuConfig((config) => {
   config.setMenuModelService(async (target, model, modelService, toDispose) => {
     const { type, cell } = target
     console.log(type)
@@ -73,7 +170,7 @@ export const useMenuConfig = createCtxMenuConfig(config => {
         model.setValue({
           id: 'root',
           type: MenuItemType.Root,
-          submenu: [NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE],
+          submenu: [NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE, NsMenuItemConfig.UPLOAD_NODE],
         })
         break
       /** 边菜单 */

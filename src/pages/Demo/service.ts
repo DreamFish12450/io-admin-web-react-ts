@@ -281,7 +281,7 @@ export namespace MockApi {
 
   /** 添加节点api */
   export const addNode: NsNodeCmd.AddNode.IArgs['createNodeService'] = async (args: NsNodeCmd.AddNode.IArgs) => {
-    console.info('addNode service running, add node:', args)
+    // console.info('addNode service running, add node:', args)
 
     const { id, ports = createPorts(id, args.nodeConfig.label), groupChildren } = args.nodeConfig
 
@@ -348,7 +348,7 @@ export namespace MockApi {
 
   /** 添加边的api */
   export const addEdge: NsEdgeCmd.AddEdge.IArgs['createEdgeService'] = async (args) => {
-    console.info('addEdge service running, add edge:', args)
+    // console.info('addEdge service running, add edge:', args)
     const { edgeConfig } = args
     return {
       ...edgeConfig,

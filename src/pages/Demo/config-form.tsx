@@ -50,8 +50,12 @@ function createInputPort(portMeta) {
     ...portMeta,
   }
 }
-let rule = [{ message: '必须填入数字' }, { validator: checkNum }]
+const rule = [{ message: '必须填入数字' }, { validator: checkNum }]
 let calVal = '1234'
+let cTrue = 0,
+  pTrue = 0,
+  gTrue = 0
+let wrong = 0
 export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (args) => {
   const { targetData, modelService, targetType } = args
   /** 可以使用获取 graphMeta */
@@ -181,7 +185,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输出预测C4',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  // defaultValue: 0, // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -194,7 +198,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输出预测P*',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  // defaultValue: 0, // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -207,7 +211,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输出预测G*',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  // defaultValue: 0, // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -260,6 +264,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
     tabs: [],
   }
 }
+let c4, gStar, pStar;
 export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = async (args) => {
   // console.log('formValueUpdateService', args);
   const { values, allFields, commandService, targetData, modelService } = args
@@ -269,6 +274,10 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
     })
   }
   if (targetData.label && targetData.label === '74LS182') {
+    console.log("wrong",wrong,cTrue,pTrue);
+    if(cTrue == 1 && pTrue == 1 && gTrue == 1){
+      console.log("wrong",wrong,cTrue,pTrue);
+    }
     let temp = values[0].name[0]
     console.log('formValueUpdateService  values:', values[0].value)
     // if (values[0].value > 1) {
@@ -279,7 +288,7 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
     //             '您输入的数必须为0或1',
     //     }
     // val[temp] =  ? {} :;
-    let c4, gStar, pStar
+
     console.log(values[0].name)
     if (values[0].name[0] === 'C4') {
       let c0 = 0
@@ -295,33 +304,73 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
       c4 = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & (g1 + p4) & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
       gStar = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & g1) >= 1 ? 1 : 0
       pStar = (p4 & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
-
+      console.log("note",note)
       if (values[0].value != c4) {
-        console.log('c4', c4, values[0].value)
-        if (note)
+        note = !note
+        if (note) {
           notification.open({
             message: 'Error',
             description: '您的C4验证错误',
           })
-        note = !note
+          wrong++
+        }
+      } else {
+        cTrue = 1;
       }
     } else if (values[0].name[0] === 'pStar') {
+      // console.log(pStar)
+      let c0 = 0
+      let p1 = val.x0 ^ val.y0
+      let g1 = val.x0 & val.y0
+      let p2 = val.x1 ^ val.y1
+      let g2 = val.x1 & val.y1
+      let p3 = val.x2 ^ val.y2
+      let g3 = val.x2 & val.y2
+      let p4 = val.x3 ^ val.y3
+      let g4 = val.x3 & val.y3
+      let c2 = ((g2 + p2) & (g1 + p2) & p1 & c0) >= 1 ? 1 : 0
+      c4 = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & (g1 + p4) & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
+      gStar = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & g1) >= 1 ? 1 : 0
+      pStar = (p4 & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
       if (values[0].value != pStar) {
-        if (note)
+        console.log("note",note)
+        note = !note
+        if (note) {
           notification.open({
             message: 'Error',
             description: '您的p*验证错误',
           })
-        note = !note
+
+          wrong++
+        }
+      } else {
+        pTrue = 1
       }
     } else if (values[0].name[0] === 'gStar') {
+      let c0 = 0
+      let p1 = val.x0 ^ val.y0
+      let g1 = val.x0 & val.y0
+      let p2 = val.x1 ^ val.y1
+      let g2 = val.x1 & val.y1
+      let p3 = val.x2 ^ val.y2
+      let g3 = val.x2 & val.y2
+      let p4 = val.x3 ^ val.y3
+      let g4 = val.x3 & val.y3
+      let c2 = ((g2 + p2) & (g1 + p2) & p1 & c0) >= 1 ? 1 : 0
+      c4 = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & (g1 + p4) & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
+      gStar = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & g1) >= 1 ? 1 : 0
+      pStar = (p4 & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
       if (values[0].value != gStar) {
-        if (note)
+        note = !note
+        if (note) {
           notification.open({
             message: 'Error',
             description: '您的g*验证错误',
           })
-        note = !note
+          wrong++
+        }
+      } else {
+        gTrue = 1
       }
     }
   } else {
@@ -383,7 +432,6 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
         await node
       }
       usePromise()
-
     }
     // console.log('result', result)
   }

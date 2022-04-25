@@ -99,8 +99,9 @@ export const useGraphHookConfig = createHookConfig<IProps>((config, proxy) => {
             {
               eventName: 'edge:added',
               callback: (e, cmds) => {
+                // console.log("e",e)
                 const node = e.edge.getTargetNode() as any as X6Node
-                console.log("node:moved",node)
+                // console.log("node:moved",node)
                 const isCommand = ObjectExt.getByPath(e, 'options.isCommand', '.')
                 console.log(isCommand)
                 if (!isCommand) {
@@ -109,7 +110,7 @@ export const useGraphHookConfig = createHookConfig<IProps>((config, proxy) => {
                 
                 const belowNode = e.edge.getSourceNode() as any as X6Node
                 let inputArr = node.store.data.data.inputArr || []
-                console.log("node.inputArr", belowNode)
+                // console.log("node.inputArr", belowNode)
                 const index = inputArr.findIndex(d => d.id == e.edge.getTargetPortId())
                 if(index < 0 ) {
                     node.store.data.data.inputArr.push({id:e.edge.getTargetPortId(), val:belowNode.id})

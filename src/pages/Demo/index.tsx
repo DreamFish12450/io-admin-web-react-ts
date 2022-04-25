@@ -86,7 +86,7 @@ export const Demo: React.FC<IProps> = props => {
       onLoad={onLoad}
       meta={meta}
     >
-      <DagGraphExtension layout="LR" />
+      <DagGraphExtension layout="TB" />
       <NodeCollapsePanel
         className="xflow-node-panel"
         searchService={dndPanelConfig.searchService}

@@ -25,11 +25,11 @@ export const evalRPN = function (tokens) {
       tokens[i] === '大于等于1' ||
       tokens[i] === '或非门' ||
       tokens[i] === '异或' ||
-      tokens[i] === '与非门' 
+      tokens[i] === '与非门'
     ) {
       let s2 = stack.pop(),
         s1 = stack.pop()
-      res = calc(s1[0]*1, s2[0]*1, tokens[i])
+      res = calc(s1[0] * 1, s2[0] * 1, tokens[i])
       stack.push(res)
       console.log(stack)
     } else {
@@ -38,5 +38,56 @@ export const evalRPN = function (tokens) {
   }
   return stack.pop()
 }
+export const inOrder = async function (node) {
+  const stack: any[] = []
+  let result: any[] = []
+  let flag = 0
+  const res: string[] = []
+  stack.push(node)
+  // 通过async/await去操作得到的Promise对象
+  let usePromise = async () => {
+    while (stack.length) {
+      let node = stack.pop()
+      if (node.label == '非门') {
+        flag = 1
+      } else {
+        if (judge(node.label)) result.push(node.label)
+        else result.push(node.id)
+      }
+      if (node.inputArr.length > 0) {
+        console.log('node.label',node.inputArr.length)
+        let arr = node.inputArr
+        let temp
+        arr.forEach((e: { val: any }) => {
+          temp = window.app.getNodeById(e.val).then((data: any) => {
+            stack.push(data.store.data.data)
+            return data.store.data.data
+          })
+        })
+        await temp
+        
+      }
+    }
+    result = result.reverse()
+    console.log('reverse', result)
 
+
+  }
+  await usePromise()
+  return new Promise<string[]>((resolve, reject) => {
+    console.log("想下班2",result);
+    resolve(result)
+  })
+}
+export const judge = function (tokens: string) {
+  if (
+    tokens === '与门' ||
+    tokens === '或门' ||
+    tokens === '大于等于1' ||
+    tokens === '或非门' ||
+    tokens === '异或' ||
+    tokens === '与非门'
+  )
+    return true
+}
 let res = evalRPN(['1桩', '0桩', '与门'])
