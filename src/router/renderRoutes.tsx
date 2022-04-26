@@ -18,31 +18,24 @@ const renderRoutes = (routes: RouterType[], extraProps = {}, switchProps = {}) =
               if (route.redirect) {
                 return <Redirect to={route.redirect}/>
               }
-
               let pathname = props.location.pathname
               let permissions = route.permissions || []
-
               // 如果是登陆状态访问登陆页面, 则跳转资源的第一个资源路径
-              let permissionsStore = getPermissions()
-              if (pathname === '/login' && hasToken() && permissionsStore.length > 0) {
-                for (let per of permissionsStore) {
-                  if (per.type === 1) return <Redirect to={per.uri}/>
-                }
-              }
-
+              let permissionsStore = sessionStorage
               // 如果是免权限页面
-              if (true) {
+              if (pathname === '/Login') {
                 return returnRender(route, props, extraProps)
-              }
-
-              // 最终验证是否拥有数据库返回来的资源权限
-              for (let per of permissionsStore) {
-                if (per.uri === pathname && per.type === 1) {
+              } else if(pathname === '/'){
+                console.log("pathname",pathname)
+                return <Redirect to='/Login'/>
+              } else {
+                if(!sessionStorage.length) {
+                  return <Redirect to='/Login'/>
+                } else {
+                  console.log("route",route)
                   return returnRender(route, props, extraProps)
                 }
               }
-              return returnRender(route, props, extraProps)
-              // return <Redirect to='/Demo'/>
             }
           }
         />

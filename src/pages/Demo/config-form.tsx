@@ -10,10 +10,11 @@ import {
 } from '@antv/xflow'
 import { controlMapService, ControlShapeEnum } from './form-controls'
 import { MODELS } from '@antv/xflow'
-import { Button, notification } from 'antd'
+import { Button, message, notification } from 'antd'
 import { SmileOutlined } from '@ant-design/icons'
 import type { Node as X6Node } from '@antv/x6'
 import { evalRPN } from '../../utils/evalRPN'
+import { post } from '@/utils/request'
 // import { useGraphConfig } from './config-graph'
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(() => resolve(true), ms))
@@ -73,13 +74,20 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
               name: 'exp',
               controls: [
                 {
+                  name: 'test',
+                  tooltip: '开始测验考试',
+                  label: '开始测验考试',
+                  shape: ControlShape.CHECKBOX,
+                  defaultValue: false,
+                },
+                {
                   name: 'x0',
                   label: '芯片输入x0',
                   shape: 'Input',
                   tooltip: '芯片输入x0',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -92,7 +100,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入y0',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -105,7 +113,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入x1',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -118,7 +126,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入y1',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -131,7 +139,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入x2',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -144,7 +152,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入y2',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -157,7 +165,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入x2',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -171,7 +179,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
                   tooltip: '芯片输入y3',
                   placeholder: 'please write 1 or 0',
                   value: '',
-                  defaultValue: 0, // 可以认为是默认值
+                  defaultValue: Math.floor(Math.random() * 2), // 可以认为是默认值
                   hidden: false,
                   options: [{ title: '', value: '' }],
                   originData: {}, // 原始数据
@@ -264,7 +272,7 @@ export const formSchemaService: NsJsonSchemaForm.IFormSchemaService = async (arg
     tabs: [],
   }
 }
-let c4, gStar, pStar;
+let c4, gStar, pStar
 export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = async (args) => {
   // console.log('formValueUpdateService', args);
   const { values, allFields, commandService, targetData, modelService } = args
@@ -274,21 +282,32 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
     })
   }
   if (targetData.label && targetData.label === '74LS182') {
-    console.log("wrong",wrong,cTrue,pTrue);
-    if(cTrue == 1 && pTrue == 1 && gTrue == 1){
-      console.log("wrong",wrong,cTrue,pTrue);
+    console.log('wrong', wrong, cTrue, pTrue)
+    if (cTrue == 1 && pTrue == 1 && gTrue == 1) {
+      console.log('wrong', wrong, cTrue, pTrue)
     }
     let temp = values[0].name[0]
-    console.log('formValueUpdateService  values:', values[0].value)
-    // if (values[0].value > 1) {
-    //     val[temp] = 1;
-    //     notification.open({
-    //         message: 'Error',
-    //         description:
-    //             '您输入的数必须为0或1',
-    //     }
-    // val[temp] =  ? {} :;
-
+    // console.log('formValueUpdateService  values:', values[0].value)
+    if (values[0].name[0] === 'test') {
+      console.log('test', values[0].value)
+      if (values[0].value && cTrue == 1 && pTrue == 1 && gTrue == 1) {
+        console.log('wrong', wrong, cTrue, pTrue)
+        let obj = {
+          url: '/api/grade/update',
+          params: {
+            id: sessionStorage.getItem('id') || 0,
+            grade2: 100 - wrong * 5 <= 0 ? 5 : 100 - wrong * 5,
+          },
+        }
+        post(obj).then((res)=>{
+          if(res.data.message === '更新成功') {
+            message.success(res.data.message)
+          }else {
+            message.error(res.data.message)
+          }
+        })
+      }
+    }
     console.log(values[0].name)
     if (values[0].name[0] === 'C4') {
       let c0 = 0
@@ -304,7 +323,6 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
       c4 = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & (g1 + p4) & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
       gStar = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & g1) >= 1 ? 1 : 0
       pStar = (p4 & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
-      console.log("note",note)
       if (values[0].value != c4) {
         note = !note
         if (note) {
@@ -315,7 +333,7 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
           wrong++
         }
       } else {
-        cTrue = 1;
+        cTrue = 1
       }
     } else if (values[0].name[0] === 'pStar') {
       // console.log(pStar)
@@ -333,7 +351,6 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
       gStar = ((g4 + p4) & (g3 + p4) & p3 & (g2 + p4) & p3 & p2 & g1) >= 1 ? 1 : 0
       pStar = (p4 & p3 & p2 & p1 & c0) >= 1 ? 1 : 0
       if (values[0].value != pStar) {
-        console.log("note",note)
         note = !note
         if (note) {
           notification.open({

@@ -1,7 +1,6 @@
 export interface ILoginSubmit {
-  username: string
+  id: number
   password: string
-  code: string
 }
 
 export interface ICaptcha {

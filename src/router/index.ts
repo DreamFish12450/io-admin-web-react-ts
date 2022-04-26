@@ -28,21 +28,11 @@ export const noPermission: RouterType[] = [
     ]
   },
   {
-    path: '/Home',
-    component: Layout,
-    children: [
-      {
-        key: 'Home',
-        component: Home,
-        isShow: false,
-      }
-    ]
-  },
-  {
     name: '管理',
     path: '/Manage',
     key: '/Manage',
     component: Layout,
+    exact: true,
     isShow:true,
     children: [
       {
@@ -50,12 +40,14 @@ export const noPermission: RouterType[] = [
         key: '/Manage/Manage',
         name: '成绩管理',
         component: Manage,
+        exact: true,
         isShow: true,
       },
       {
         path: '/Manage/StuManage',
         key:'/Manage/StuManage',
         name: '学生管理',
+        exact: true,
         component:StuManage,
         isShow: true,
       }
@@ -66,12 +58,14 @@ export const noPermission: RouterType[] = [
     key:'/Demo',
     component: Layout,
     isShow:true,
+    exact: true,
     name: '实验部分',
     children: [
       {
         path: '/Demo/Demo',
         key: '/Demo/Demo',
         name:'实验',
+        exact: true,
         component: Demo,
         isShow: true,
       }
