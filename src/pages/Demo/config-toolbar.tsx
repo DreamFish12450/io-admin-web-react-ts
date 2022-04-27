@@ -103,11 +103,17 @@ namespace NSToolbarConfig {
       iconName: 'DownloadOutlined',
       id: TOOLBAR_ITEMS.LOAD_GRAPH_DATA,
       onClick: async ({ commandService }) => {
-        
-
-        let obj: IRequest<any> = {
-          url: '/api/module/select',
-          params: { id: '1' },
+        let obj: IRequest<any>
+        if(sessionStorage.getItem("level") == '0'){
+          obj = {
+            url: '/api/module/select',
+            params: { id: sessionStorage.getItem("id") },
+          }
+        } else {
+          obj = {
+            url: '/api/module/all',
+            params: { id: sessionStorage.getItem("id") },
+          }
         }
 
         await post(obj).then((res) => {

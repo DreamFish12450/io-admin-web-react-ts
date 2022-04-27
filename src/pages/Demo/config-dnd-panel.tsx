@@ -46,14 +46,7 @@ export const nodeDataService: NsNodeCollapsePanel.INodeDataService = async (meta
           parentId: '1',
           renderKey: DND_RENDER_ID,
           popoverContent: <NodeDescription name="74LS182" />,
-        },
-        {
-          id: '4',
-          label: '算法组件3',
-          parentId: '1',
-          renderKey: DND_RENDER_ID,
-          popoverContent: <NodeDescription name="算法组件3" />,
-        },
+        }
       ],
     },
     {

@@ -24,7 +24,6 @@ import { judge } from '@/utils/evalRPN'
 import type { IArgsBase, ICommandHandler, IGraphCommandService } from '@antv/xflow'
 import { ICommandContextProvider } from '@antv/xflow'
 
-
 import 'antd/es/modal/style/index.css'
 import { TOOLBAR_ITEMS } from '../config-toolbar'
 import { DND_RENDER_ID, GROUP_NODE_RENDER_ID } from '../constant'
@@ -173,11 +172,13 @@ function showModal(res: any, getAppContext: IGetAppCtx) {
       const childrenList = []
       let num = 15
       const groupChildrenId: string[] = []
+      console.log('res', res)
       res = ModalCache.res.find((c) => {
         return c.label === moduleLabelName
       })
       console.log(res, '++', commandService)
       /** 执行 backend service */
+      sessionStorage.setItem("curStuId",res.stuId);
       if (res) {
         let formulaArr = res.formula.split('+')
         let xBais = 1
@@ -192,7 +193,7 @@ function showModal(res: any, getAppContext: IGetAppCtx) {
           })
           var yBais = 1
           inputArr.forEach(async (v: string, index: number) => {
-            console.log('yBais', yBais)
+            // console.log('yBais', yBais)
             let oid = uuidv4()
             groupChildrenId.push(oid)
             const args: NsNodeCmd.AddNode.IArgs = {
@@ -251,7 +252,7 @@ function showModal(res: any, getAppContext: IGetAppCtx) {
                 oldOutputPort = targetData?.port.ports.find((v: any) => {
                   return v?.connected !== true && v?.type == 'output'
                 }).id
-                console.log('oldOutputPort', oldOutputPort)
+                // console.log('oldOutputPort', oldOutputPort)
               })
             }
           })
@@ -266,7 +267,7 @@ function showModal(res: any, getAppContext: IGetAppCtx) {
             label: res.label,
           },
         })
-        console.log('groupChildrenId', groupChildrenId)
+        // console.log('groupChildrenId', groupChildrenId)
       }
 
       /** 更新成功后，关闭modal */
@@ -292,21 +293,49 @@ function showModal(res: any, getAppContext: IGetAppCtx) {
   const ModalContent = () => {
     const [form] = Form.useForm<IFormProps>()
     const [labelName, setLabelName] = React.useState(res[0].label)
+    const [labelArr, setLabelArr] = React.useState(res)
     /** 缓存form实例 */
     ModalCache.form = form
+    let stuArr: string[] = []
+    let labelToStuArr = {}
+    if (sessionStorage.getItem('level') == '1') {
+      res.forEach((e) => {
+        if (stuArr.indexOf(e.stuId) < 0) stuArr.push(e.stuId)
+        if (Object.keys(labelToStuArr).indexOf(e.stuId.toString()) < 0) {
+          labelToStuArr[e.stuId] = [{ label: e.label }]
+        } else {
+          labelToStuArr[e.stuId].push({ label: e.label })
+        }
+      })
+    }
+    const handleStuChange = (value) => {
+      setLabelArr(labelToStuArr[value])
+      setLabelName(labelToStuArr[value][0])
+      console.log('ModalCache.res', ModalCache.res, labelToStuArr[value])
+      ModalCache.res = res.filter((e) => {
+        return e.stuId == value
+      })
+    }
     ModalCache.res = res
     return (
       <div>
         <ConfigProvider>
           <Form form={form} {...layout} initialValues={{}}>
-            <Form.Item name="moduleLabel" label="模块名" rules={[{ required: true, message: '请选择' }]}>
-              {/* <Select defaultValue={provinceData[0]} style={{ width: 120 }} onChange={handleProvinceChange}>
-                {provinceData.map((province) => (
-                  <Select.Option key={province}>{province}</Select.Option>
+            <Form.Item
+              name="nameLabel"
+              label="学生名"
+              rules={[{ required: sessionStorage.getItem('level') == '1' ? true : false, message: '请选择' }]}
+              style={{ display: sessionStorage.getItem('level') == '1' ? 'flex' : 'none' }}
+            >
+              <Select style={{ width: 120 }} onChange={handleStuChange}>
+                {stuArr.map((stu) => (
+                  <Select.Option key={stu}>{stu}</Select.Option>
                 ))}
-              </Select> */}
+              </Select>
+            </Form.Item>
+            <Form.Item name="moduleLabel" label="模块名" rules={[{ required: true, message: '请选择' }]}>
               <Select style={{ width: 120 }} value={labelName}>
-                {res.map((l: any) => (
+                {labelArr.map((l: any) => (
                   <Select.Option key={l.label}>{l.label}</Select.Option>
                 ))}
               </Select>

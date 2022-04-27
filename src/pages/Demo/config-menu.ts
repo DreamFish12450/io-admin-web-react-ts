@@ -3,7 +3,7 @@ import type { NsNodeCmd, NsEdgeCmd, IMenuOptions, NsGraph } from '@antv/xflow'
 import type { NsRenameNodeCmd } from './cmd-extensions/cmd-rename-node-modal'
 import { createCtxMenuConfig, MenuItemType } from '@antv/xflow'
 import { IconStore, XFlowNodeCommands, XFlowEdgeCommands } from '@antv/xflow'
-import { DeleteOutlined, EditOutlined, StopOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, StopOutlined ,UploadOutlined} from '@ant-design/icons'
 import { CustomCommands } from './cmd-extensions/constants'
 import { MockApi } from './service'
 import { groupEnd } from 'console'
@@ -11,13 +11,14 @@ import { inOrder, judge } from '../../utils/evalRPN'
 import { IRequest } from '@/utils/request.type'
 import { post } from '@/utils/request'
 import { notification } from 'antd'
+import { NsUploadGradeCmd } from './cmd-extensions/cmd-upload-grade-modal'
 /** menuitem 配置 */
 export namespace NsMenuItemConfig {
   /** 注册菜单依赖的icon */
   IconStore.set('DeleteOutlined', DeleteOutlined)
   IconStore.set('EditOutlined', EditOutlined)
   IconStore.set('StopOutlined', StopOutlined)
-
+  IconStore.set('UploadOutlined',UploadOutlined )
   export const DELETE_EDGE: IMenuOptions = {
     id: XFlowEdgeCommands.DEL_EDGE.id,
     label: '删除边',
@@ -61,6 +62,19 @@ export namespace NsMenuItemConfig {
     },
   }
 
+  export const UPLOAD_GRADE: IMenuOptions = {
+    id: CustomCommands.SHOW_UPLOAD_MODAL.id,
+    label: '上传成绩',
+    isVisible: sessionStorage.getItem("level") == '1'?true:false,
+    iconName: 'UploadOutlined',
+    onClick: async ({ target, commandService }) => {
+      const nodeConfig = target.data as NsGraph.INodeConfig
+      commandService.executeCommand<NsUploadGradeCmd.IArgs>(CustomCommands.SHOW_UPLOAD_MODAL.id, {
+        nodeConfig,
+        updateNodeNameService: MockApi.renameNode,
+      })
+    },
+  }
   export const SEPARATOR: IMenuOptions = {
     id: 'separator',
     type: MenuItemType.Separator,
@@ -170,7 +184,7 @@ export const useMenuConfig = createCtxMenuConfig((config) => {
         model.setValue({
           id: 'root',
           type: MenuItemType.Root,
-          submenu: [NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE, NsMenuItemConfig.UPLOAD_NODE],
+          submenu: [NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE, NsMenuItemConfig.UPLOAD_NODE,NsMenuItemConfig.UPLOAD_GRADE],
         })
         break
       /** 边菜单 */

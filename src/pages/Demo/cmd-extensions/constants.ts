@@ -26,4 +26,9 @@ export namespace CustomCommands {
     label: '打开导入弹窗',
     category,
   }
+  export const SHOW_UPLOAD_MODAL: IGraphCommand = {
+    id: 'xflow:upload-grade-modal',
+    label: '打开导入弹窗',
+    category,
+  }
 }

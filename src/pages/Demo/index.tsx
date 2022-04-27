@@ -102,7 +102,7 @@ export const Demo: React.FC<IProps> = props => {
         config={toolbarConfig}
         position={{ top: 0, left: 230, right: 290, bottom: 0 }}
       />
-      <XFlowCanvas position={{ top: 40, left: 230, right: 290, bottom: 0 }}>
+      <XFlowCanvas position={{ top: 40, left: 230, right: 290, bottom: 0}}>
         <CanvasScaleToolbar position={{ top: 12, right: 12 }} />
         <CanvasContextMenu config={menuConfig} />
         <CanvasSnapline color="#faad14" />
