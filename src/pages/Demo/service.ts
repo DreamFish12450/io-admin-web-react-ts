@@ -4,6 +4,7 @@ import { uuidv4, NsGraph, NsGraphStatusCommand } from '@antv/xflow'
 import type { NsRenameNodeCmd } from './cmd-extensions/cmd-rename-node-modal'
 import type { NsNodeCmd, NsEdgeCmd, NsGraphCmd } from '@antv/xflow'
 import type { NsDeployDagCmd } from './cmd-extensions/cmd-deploy'
+import { post } from '@/utils/request'
 /** mock 后端接口调用 */
 export namespace MockApi {
   export const NODE_COMMON_PROPS = {
@@ -337,6 +338,7 @@ export namespace MockApi {
   /** 更新节点 name，可能依赖接口判断是否重名，返回空字符串时，不更新 */
   export const renameNode: NsRenameNodeCmd.IUpdateNodeNameService = async (name, node, graphMeta) => {
     console.log('rename node', node, name, graphMeta)
+
     return { err: null, nodeName: name }
   }
 

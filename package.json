@@ -16,6 +16,8 @@
     "@types/redux-immutable": "^4.0.1",
     "antd": "^4.16.2",
     "axios": "^0.21.1",
+    "echarts": "^5.3.2",
+    "echarts-for-react": "^3.0.2",
     "immutable": "^4.0.0-rc.12",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
@@ -28,6 +30,7 @@
     "styled-components": "^5.3.0"
   },
   "devDependencies": {
+    "@types/echarts": "^4.9.14",
     "@types/node": "^15.12.1",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",

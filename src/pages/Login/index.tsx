@@ -34,7 +34,6 @@ const Login: React.FC<IProperties> = (props): React.ReactElement => {
       params: values,
     }
     post(obj).then((res) => {
-      console.log("'/api/user/select'", res.data.message)
       if (res.data.message === 'ok') {
         message.success('登陆成功')
         sessionStorage.setItem("level",res.data.data.level)

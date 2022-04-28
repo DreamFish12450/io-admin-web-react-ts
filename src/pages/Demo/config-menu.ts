@@ -87,6 +87,14 @@ export namespace NsMenuItemConfig {
     onClick: async ({ target, commandService }) => {
       console.log('target?.data?.groupChildren', target?.data)
       // console.log('UPLOADTARGET', target)
+      let obj = {
+        url:'/api/module/select',
+        params: { id: sessionStorage.getItem("id") },
+      }
+      let labelNameArr: any[] = []
+      await post(obj).then((res)=>{        
+        labelNameArr = res.data.data.map(v=>v.label)
+      })
       const map: any[] = []
       let resMap: any[] = []
       let finalData: string
@@ -144,19 +152,27 @@ export namespace NsMenuItemConfig {
               if (temp1 < outputNum) {
                 if (temp1 === outputNum - 1) {
                   resultArr += output + '-' + resMap[temp1 - 1].toString()
-                  let obj: IRequest<any> = {
-                    url: '/api/module/insert',
-                    params: { inputNum: inputNum, outputNum: outputNum, stuId: '1', label: target?.data?.label || '' ,formula:resultArr},
-                  }
-                  post(obj).then((res) => {
-                    if(res.data.message === '更新成功'){
-                      notification.open({
-                        message: 'Success',
-                        description: '上传成功',
-                      })
+                  if(labelNameArr.indexOf(target?.data?.label) < 0){
+                    let obj: IRequest<any> = {
+                      url: '/api/module/insert',
+                      params: { inputNum: inputNum, outputNum: outputNum, stuId: '1', label: target?.data?.label || '' ,formula:resultArr},
                     }
-                  })
-                  console.log('resultArr', resultArr)
+                    post(obj).then((res) => {
+                      if(res.data.message === '更新成功'){
+                        notification.open({
+                          message: 'Success',
+                          description: '上传成功',
+                        })
+                      }
+                    })
+                  } else {
+                    notification.open({
+                      message: '错误',
+                      description: '命名重复',
+                    })
+                  }
+
+                  // console.log('resultArr', resultArr)
                 } else {
                   resultArr += output + '-' + resMap[temp1 - 1].toString() + '+'
                 }

@@ -10,6 +10,7 @@ import { ICommandContextProvider } from '@antv/xflow'
 import { CustomCommands } from './constants'
 
 import 'antd/es/modal/style/index.css'
+import { post } from '@/utils/request'
 
 type ICommand = ICommandHandler<
   NsRenameNodeCmd.IArgs,
@@ -71,6 +72,7 @@ export class RenameNodeCommand implements ICommand {
 
       const x6Graph = await ctx.getX6Graph()
       const cell = x6Graph.getCellById(nodeConfig.id)
+
 
       if (!cell || !cell.isNode()) {
         throw new Error(`${nodeConfig.id} is not a valid node`)
@@ -153,7 +155,9 @@ function showModal(node: NsGraph.INodeConfig, getAppContext: IGetAppCtx) {
       const values = await form.getFieldsValue()
       const newName: string = values.newNodeName
       /** 执行 backend service */
+ 
       if (updateNodeNameService) {
+        // console.log("labelNameArr",labelNameArr)
         const { err, nodeName } = await updateNodeNameService(newName, node, graphMeta)
         if (err) {
           throw new Error(err)
