@@ -61,13 +61,13 @@ export namespace NsMenuItemConfig {
       })
     },
   }
-
   export const UPLOAD_GRADE: IMenuOptions = {
     id: CustomCommands.SHOW_UPLOAD_MODAL.id,
     label: '上传成绩',
-    isVisible: sessionStorage.getItem("level") == '1'?true:false,
+    // isVisible: sessionStorage.getItem("level") == '1' ? true : false,
     iconName: 'UploadOutlined',
     onClick: async ({ target, commandService }) => {
+      // console.log("成績",sessionStorage.getItem("level") == '1'? true :false,)
       const nodeConfig = target.data as NsGraph.INodeConfig
       commandService.executeCommand<NsUploadGradeCmd.IArgs>(CustomCommands.SHOW_UPLOAD_MODAL.id, {
         nodeConfig,
@@ -82,10 +82,10 @@ export namespace NsMenuItemConfig {
 
   export const UPLOAD_NODE: IMenuOptions = {
     id: 'UPLOAD',
-    label: '上传节点',
-    iconName: 'DeleteOutlined',
+    label: '上传模块',
+    iconName: 'UploadOutlined',
     onClick: async ({ target, commandService }) => {
-      console.log('target?.data?.groupChildren', target?.data)
+      // console.log('target?.data?.groupChildren', target?.data)
       // console.log('UPLOADTARGET', target)
       let obj = {
         url:'/api/module/select',
@@ -122,7 +122,7 @@ export namespace NsMenuItemConfig {
             })
             .then((res: any) => {
               window.app.getNodeById(res).then((val: any) => {
-                console.log('inputPort', inputPort)
+                // console.log('inputPort', inputPort)
                 inOrder(val.store.data.data).then((v) => {
                   v.forEach((e, k) => {
                     if (!judge(e)) {
@@ -158,6 +158,7 @@ export namespace NsMenuItemConfig {
                       params: { inputNum: inputNum, outputNum: outputNum, stuId: '1', label: target?.data?.label || '' ,formula:resultArr},
                     }
                     post(obj).then((res) => {
+                      console.log("res",res)
                       if(res.data.message === '更新成功'){
                         notification.open({
                           message: 'Success',
@@ -186,6 +187,7 @@ export namespace NsMenuItemConfig {
           return 111
         }),
       )
+      asyncFun
     },
   }
 }
@@ -193,14 +195,14 @@ export namespace NsMenuItemConfig {
 export const useMenuConfig = createCtxMenuConfig((config) => {
   config.setMenuModelService(async (target, model, modelService, toDispose) => {
     const { type, cell } = target
-    console.log(type)
+    console.log("注册",sessionStorage.getItem("level") == '1' ? true : false,)
     switch (type) {
       /** 节点菜单 */
       case 'node':
         model.setValue({
           id: 'root',
           type: MenuItemType.Root,
-          submenu: [NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE, NsMenuItemConfig.UPLOAD_NODE,NsMenuItemConfig.UPLOAD_GRADE],
+          submenu: sessionStorage.getItem("level") == '1'?[NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE, NsMenuItemConfig.UPLOAD_NODE,NsMenuItemConfig.UPLOAD_GRADE]:[NsMenuItemConfig.DELETE_NODE, NsMenuItemConfig.RENAME_NODE, NsMenuItemConfig.UPLOAD_NODE],
         })
         break
       /** 边菜单 */

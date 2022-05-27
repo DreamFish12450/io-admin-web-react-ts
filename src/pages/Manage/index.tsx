@@ -12,7 +12,7 @@ const Manage: React.FC<IProperties> = ({}): React.ReactElement => {
   }
   const optionVerify = {
     title: {
-      text: '验证实验',
+      text: '自主设计实验',
       x: 'center',
     },
     tooltip: {
@@ -43,7 +43,7 @@ const Manage: React.FC<IProperties> = ({}): React.ReactElement => {
   }
   const optionAutonomous = {
     title: {
-      text: '自主实验',
+      text: '验证实验(74LS182)',
       x: 'center',
     },
     tooltip: {
@@ -90,12 +90,12 @@ const Manage: React.FC<IProperties> = ({}): React.ReactElement => {
       dataIndex: 'stuId',
     },
     {
-      title: '验证实验成绩',
+      title: '验证实验(74LS182)成绩',
       dataIndex: 'grade2',
       sorter: (a, b) => a.grade2 - b.grade2,
     },
     {
-      title: '自主实验成绩',
+      title: '自主设计实验成绩',
       dataIndex: 'grade1',
       sorter: (a, b) => a.grade1 - b.grade1,
     },

@@ -398,14 +398,13 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
       let arr = targetData.inputArr
       const stack = []
       let result = []
-      let flag = 0
       stack.push(targetData)
       // 通过async/await去操作得到的Promise对象
       let usePromise = async () => {
         while (stack.length) {
           let node = stack.pop()
           if (node.label == '非门') {
-            flag = 1
+            result.push(node.label)
           } else {
             result.push(node.label)
           }
@@ -423,7 +422,9 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
             console.log('stack', stack)
           }
         }
-        calVal = flag ? !evalRPN(result.reverse()) : evalRPN(result.reverse())
+        
+        calVal = evalRPN(result.reverse())
+        console.log("result",result)
         if (note)
           notification.open({
             message: '成功',

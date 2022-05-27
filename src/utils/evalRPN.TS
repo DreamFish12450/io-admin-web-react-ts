@@ -7,9 +7,9 @@ var calc = function (s1, s2, char) {
     case '大于等于1':
       return s1 + s2 >= 1 ? 1 : 0
     case '与非门':
-      return !(s1 && s2)
+      return (s1 && s2) ? 0: 1
     case '或非门':
-      return !(s1 || s2)
+      return (s1 || s2)? 0: 1
     case '异或':
       return s1 ^ s2
   }
@@ -19,7 +19,13 @@ export const evalRPN = function (tokens) {
     len = tokens.length
   let res = null
   for (let i = 0; i < len; i++) {
-    if (
+    if(tokens[i] === '非门'){
+      let s2 = stack.pop(),
+      res = calc(1, s2[0] * 1, '与非门')
+      console.log("stack",res)
+      stack.push(res+'桩')
+    }
+    else if (
       tokens[i] === '与门' ||
       tokens[i] === '或门' ||
       tokens[i] === '大于等于1' ||
@@ -30,13 +36,14 @@ export const evalRPN = function (tokens) {
       let s2 = stack.pop(),
         s1 = stack.pop()
       res = calc(s1[0] * 1, s2[0] * 1, tokens[i])
-      stack.push(res)
+      console.log("stack",res)
+      stack.push(res+'桩')
       console.log(stack)
     } else {
       stack.push(tokens[i])
     }
   }
-  return stack.pop()
+  return stack.pop()[0]
 }
 export const inOrder = async function (node) {
   const stack: any[] = []

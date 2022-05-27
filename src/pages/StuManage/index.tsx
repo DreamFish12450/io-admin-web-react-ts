@@ -11,9 +11,14 @@ const normFile = (e) => {
   console.log('Upload event:', e)
   const formData = new FormData()
   formData.append('file', e.file)
+  // formData.append('teaId', sessionStorage.getItem('id'))
+
   // axios.post("api/user/upload",formData)
   let obj: IRequest<any> = {
     url: '/api/user/upload',
+    params: {
+      teaId: sessionStorage.getItem('id') || 0,
+    },
     data: formData,
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
   }

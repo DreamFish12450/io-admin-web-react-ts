@@ -56,7 +56,8 @@ const Login: React.FC<IProperties> = (props): React.ReactElement => {
               <div className="info d-flex align-items-center">
                 <div className="content">
                   <div className="logo">
-                    <h1>计算机组成原理虚拟仿真实验平台</h1>
+                    <h1>计算机组成原理</h1>
+                    <h1>虚拟仿真实验平台</h1>
                   </div>
                   <p>Computer Composition Principle Virtual Simulation Experiment Platform </p>
                 </div>
@@ -123,7 +124,7 @@ const Login: React.FC<IProperties> = (props): React.ReactElement => {
                               },
                             ]}
                           />
-                          <img src={captcha.image} alt="" onClick={getCaptchaHandler} />
+                          <img src={captcha.image} alt=""  />
                         </ProForm>
                       </div>
                     </div>

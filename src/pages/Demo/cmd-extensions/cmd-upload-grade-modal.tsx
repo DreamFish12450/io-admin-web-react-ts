@@ -138,7 +138,7 @@ function showModal(node: NsGraph.INodeConfig, getAppContext: IGetAppCtx) {
       const values = await form.getFieldsValue()
       const grade: number = values.grade
       let obj = {
-        url: '/api/grade/update',
+        url: '/api/grade/update1',
         params: {
           id: sessionStorage.getItem('curStuId') || 0,
           grade1:grade,
