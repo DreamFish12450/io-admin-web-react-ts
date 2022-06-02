@@ -34,13 +34,6 @@ export const nodeDataService: NsNodeCollapsePanel.INodeDataService = async (meta
       header: '实验验证',
       children: [
         {
-          id: '2',
-          label: '74LS181',
-          parentId: '1',
-          renderKey: DND_RENDER_ID,
-          popoverContent: <NodeDescription name="74LS181" />,
-        },
-        {
           id: '3',
           label: '74LS182',
           parentId: '1',
@@ -51,7 +44,7 @@ export const nodeDataService: NsNodeCollapsePanel.INodeDataService = async (meta
     },
     {
       id: '数据加工',
-      header: '自主实验',
+      header: '设计型实验',
       children: [
         {
           id: '6',

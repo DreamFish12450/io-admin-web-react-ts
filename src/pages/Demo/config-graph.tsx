@@ -112,10 +112,11 @@ export const useGraphHookConfig = createHookConfig<IProps>((config, proxy) => {
                 let inputArr = node.store.data.data.inputArr || []
                 // console.log("node.inputArr", belowNode)
                 const index = inputArr.findIndex(d => d.id == e.edge.getTargetPortId())
+                // console.log("belowNode",node.store.data.data.inputArr)
                 if(index < 0 ) {
-                    node.store.data.data.inputArr.push({id:e.edge.getTargetPortId(), val:belowNode.id})
+                    node.store.data.data.inputArr.push({id:e.edge.getTargetPortId(), val:belowNode.id, node:belowNode.store.data.data,label:belowNode.store.data.data.label})
                 }else {
-                    node.store.data.data.inputArr[index] = Object.assign({}, node.store.data.data.inputArr[index],{id:e.edge.getTargetPortId(), val:belowNode.id})
+                    node.store.data.data.inputArr[index] = Object.assign({}, node.store.data.data.inputArr[index],{id:e.edge.getTargetPortId(), val:belowNode.id,node:belowNode})
                 }
                 // cmds.executeCommand<NsNodeCmd.UpdateNode.IArgs>(
                 //     XFlowNodeCommands.UPDATE_NODE.id,

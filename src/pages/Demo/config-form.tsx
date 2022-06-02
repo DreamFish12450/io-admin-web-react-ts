@@ -282,21 +282,19 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
     })
   }
   if (targetData.label && targetData.label === '74LS182') {
-    console.log('wrong', wrong, cTrue, pTrue)
-    if (cTrue == 1 && pTrue == 1 && gTrue == 1) {
-      console.log('wrong', wrong, cTrue, pTrue)
-    }
+    // console.log('wrong', wrong, cTrue, pTrue)
+    // if (cTrue == 1 && pTrue == 1 && gTrue == 1) {
+    //   console.log('wrong', wrong, cTrue, pTrue)
+    // }
     let temp = values[0].name[0]
     // console.log('formValueUpdateService  values:', values[0].value)
     if (values[0].name[0] === 'test') {
-      console.log('test', values[0].value)
       if (values[0].value && cTrue == 1 && pTrue == 1 && gTrue == 1) {
-        console.log('wrong', wrong, cTrue, pTrue)
         let obj = {
           url: '/api/grade/update',
           params: {
             id: sessionStorage.getItem('id') || 0,
-            grade2: 100 - wrong * 5 <= 0 ? 5 : 100 - wrong * 5,
+            grade2: 100 - wrong *  10 <= 0 ? 0 : 100 - wrong * 10,
           },
         }
         post(obj).then((res)=>{
@@ -308,7 +306,7 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
         })
       }
     }
-    console.log(values[0].name)
+    // console.log(values[0].name)
     if (values[0].name[0] === 'C4') {
       let c0 = 0
       let p1 = val.x0 ^ val.y0
@@ -419,13 +417,13 @@ export const formValueUpdateService: NsJsonSchemaForm.IFormValueUpdateService = 
               })
             })
             await temp
-            console.log('stack', stack)
+            // console.log('stack', stack)
           }
         }
         
         calVal = evalRPN(result.reverse())
-        console.log("result",result)
-        if (note)
+        // console.log("result",result)
+        if (note&&values[0].value == true)
           notification.open({
             message: '成功',
             description: `输出值为${calVal}`,

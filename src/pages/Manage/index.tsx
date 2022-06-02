@@ -127,7 +127,7 @@ const Manage: React.FC<IProperties> = ({}): React.ReactElement => {
         res.data.data.forEach((item) => {
           grades.push(item)
           // console.log('previousValue',getType(item.grade1))
-          grade1ArrCount.push(getType(item.grade1))
+          grade1ArrCount.push(getType(item.grade2))
           grade2ArrCount.push(getType(item.grade1))
         })
         grade1ArrCount.forEach((r, index) => {
@@ -171,7 +171,7 @@ const Manage: React.FC<IProperties> = ({}): React.ReactElement => {
             </Card>
           </Col>
           <Col span={12}>
-            <Card style={{ marginTop: 16 }} type="inner" title="自主实验">
+            <Card style={{ marginTop: 16 }} type="inner" title="设计型实验">
             <ReactECharts option={autonomousData} style={{ height: 400 }} />
             </Card>
           </Col>
